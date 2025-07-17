@@ -198,8 +198,9 @@ func setDefaults() {
 	viper.SetDefault("monitoring.enabled", true)
 	viper.SetDefault("monitoring.metrics_port", 9090)
 	viper.SetDefault("monitoring.prometheus_path", "/metrics")
-}/
-/ validateConfig validates the application configuration
+}
+
+// validateConfig validates the application configuration
 func validateConfig(config *Config) error {
 	// Validate coordinator configuration
 	if config.Coordinator.Port <= 0 || config.Coordinator.Port > 65535 {

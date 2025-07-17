@@ -226,3 +226,80 @@ func TestTaskAssignmentStructure(t *testing.T) {
 		t.Error("Expected worker-001 assignment to exist")
 	}
 }
+
+func TestProtocolVersionCompatibility(t *testing.T) {
+	tests := []struct {
+		name            string
+		requestedVersion string
+		expectedResult   string
+		description      string
+	}{
+		{
+			name:            "current version",
+			requestedVersion: CurrentProtocolVersion,
+			expectedResult:   CurrentProtocolVersion,
+			description:      "Current version should be accepted as-is",
+		},
+		{
+			name:            "beta version",
+			requestedVersion: ProtocolVersionBeta,
+			expectedResult:   ProtocolVersionBeta,
+			description:      "Beta version should be accepted if supported",
+		},
+		{
+			name:            "empty version",
+			requestedVersion: "",
+			expectedResult:   CurrentProtocolVersion,
+			description:      "Empty version should default to current version",
+		},
+		{
+			name:            "backward compatible version",
+			requestedVersion: "v0.9.0",
+			expectedResult:   CurrentProtocolVersion,
+			description:      "Backward compatible version should return current version",
+		},
+		{
+			name:            "unsupported version",
+			requestedVersion: "v2.0.0",
+			expectedResult:   "",
+			description:      "Unsupported version should return empty string",
+		},
+		{
+			name:            "invalid version format",
+			requestedVersion: "invalid",
+			expectedResult:   "",
+			description:      "Invalid version format should return empty string",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := GetCompatibleProtocolVersion(test.requestedVersion)
+			if result != test.expectedResult {
+				t.Errorf("Expected '%s', got '%s' - %s", test.expectedResult, result, test.description)
+			}
+		})
+	}
+}
+
+func TestIsProtocolVersionSupported(t *testing.T) {
+	tests := []struct {
+		version  string
+		expected bool
+	}{
+		{CurrentProtocolVersion, true},
+		{ProtocolVersionBeta, true},
+		{"v2.0.0", false},
+		{"", false},
+		{"invalid", false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.version, func(t *testing.T) {
+			result := IsProtocolVersionSupported(test.version)
+			if result != test.expected {
+				t.Errorf("For version '%s', expected %v, got %v", test.version, test.expected, result)
+			}
+		})
+	}
+}
